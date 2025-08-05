@@ -1,0 +1,191 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Cabeçalho -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Aulas Gravadas</h1>
+      <p class="text-gray-600 mt-1">Explore nosso acervo de aulas de música</p>
+    </div>
+    {% if user.is_professor %}
+    <a href="{% url 'aulas:nova_aula' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      </svg>
+      Nova Aula
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Filtros -->
+  <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="mundo" class="block text-sm font-medium text-gray-700 mb-1">Mundo</label>
+        <select id="mundo" name="mundo" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+          <option value="">Todos os Mundos</option>
+          <option value="1" {% if request.GET.mundo == '1' %}selected{% endif %}>Mundo 1: Iniciante</option>
+          <option value="2" {% if request.GET.mundo == '2' %}selected{% endif %}>Mundo 2: Intermediário</option>
+          <option value="3" {% if request.GET.mundo == '3' %}selected{% endif %}>Mundo 3: Avançado</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+        <select id="categoria" name="categoria" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+          <option value="">Todas as Categorias</option>
+          <option value="canto" {% if request.GET.categoria == 'canto' %}selected{% endif %}>Canto</option>
+          <option value="teclado" {% if request.GET.categoria == 'teclado' %}selected{% endif %}>Teclado</option>
+          <option value="orgao" {% if request.GET.categoria == 'orgao' %}selected{% endif %}>Órgão</option>
+        </select>
+      </div>
+      
+      <div class="flex items-end">
+        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filtrar
+        </button>
+        {% if request.GET.mundo or request.GET.categoria %}
+        <a href="{% url 'lista_aulas' %}" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          Limpar
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de Aulas -->
+  {% if aulas %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for aula in aulas %}
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 border border-gray-100">
+      <div class="aspect-w-16 aspect-h-9 bg-gray-200 relative">
+        <img src="https://img.youtube.com/vi/{{ aula.youtube_id }}/mqdefault.jpg" alt="Thumbnail da aula {{ aula.titulo }}" class="object-cover w-full h-full">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="bg-black bg-opacity-50 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            </svg>
+          </div>
+        </div>
+        <a href="{% url 'aulas:assistir_aula' aula.id %}" class="absolute inset-0" aria-label="Assistir aula {{ aula.titulo }}"></a>
+      </div>
+      
+      <div class="p-5">
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 class="text-lg font-bold text-gray-800">{{ aula.titulo }}</h2>
+            <div class="flex items-center mt-2 space-x-2">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                {{ aula.get_categoria_display }}
+              </span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Mundo {{ aula.get_mundo_display }}
+              </span>
+            </div>
+          </div>
+          {% if aula.id in assistidas_ids %}
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            ✅ Assistida
+          </span>
+          {% endif %}
+        </div>
+        
+        <p class="mt-3 text-sm text-gray-600 line-clamp-2">{{ aula.descricao }}</p>
+        
+        <div class="mt-4 flex items-center justify-between">
+          <div class="flex items-center text-sm text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{ aula.duracao }} min
+          </div>
+          <a href="{% url 'aulas:assistir_aula' aula.id %}" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
+            Assistir aula
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <h3 class="mt-2 text-lg font-medium text-gray-900">Nenhuma aula encontrada</h3>
+    <p class="mt-1 text-sm text-gray-500">Tente ajustar os filtros ou volte mais tarde.</p>
+    {% if request.GET.mundo or request.GET.categoria %}
+    <a href="{% url 'aulas:aulas' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+      Limpar filtros
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Paginação -->
+  {% if is_paginated %}
+  <div class="mt-8 flex items-center justify-between">
+    <div class="flex-1 flex justify-between sm:hidden">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.mundo %}&mundo={{ request.GET.mundo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        Anterior
+      </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if request.GET.mundo %}&mundo={{ request.GET.mundo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        Próxima
+      </a>
+      {% endif %}
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm text-gray-700">
+          Mostrando <span class="font-medium">{{ page_obj.start_index }}</span> a <span class="font-medium">{{ page_obj.end_index }}</span> de <span class="font-medium">{{ page_obj.paginator.count }}</span> resultados
+        </p>
+      </div>
+      <div>
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.mundo %}&mundo={{ request.GET.mundo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <span class="sr-only">Anterior</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </a>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <a href="#" aria-current="page" class="z-10 bg-primary-50 border-primary-500 text-primary-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+              {{ num }}
+            </a>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}{% if request.GET.mundo %}&mundo={{ request.GET.mundo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+              {{ num }}
+            </a>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if request.GET.mundo %}&mundo={{ request.GET.mundo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <span class="sr-only">Próxima</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+          {% endif %}
+        </nav>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

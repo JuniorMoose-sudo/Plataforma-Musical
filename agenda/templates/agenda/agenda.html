@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg">
+        <!-- Cabeçalho do Card -->
+        <header class="card-header bg-primary text-white py-3">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-calendar-plus me-2"></i> Agendar Aula Presencial
+            </h2>
+        </header>
+
+        <!-- Corpo do Card -->
+        <div class="card-body p-4">
+            <form method="post" novalidate class="needs-validation">
+                {% csrf_token %}
+                
+                <!-- Seção Aluno e Data/Hora -->
+                <section class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_aluno" class="form-label fw-semibold">Aluno</label>
+                            {{ form.aluno }}
+                            {% if form.aluno.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.aluno.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_data" class="form-label fw-semibold">Data e Hora</label>
+                            {{ form.data }}
+                            {% if form.data.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.data.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Seção Tipo de Aula -->
+                <section class="mb-4">
+                    <div class="form-group">
+                        <label for="id_tipo" class="form-label fw-semibold">Tipo de Aula</label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.tipo.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Seção Observações -->
+                <section class="mb-4">
+                    <div class="form-group">
+                        <label for="id_observacoes" class="form-label fw-semibold">Observações</label>
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.observacoes.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Seção Botões -->
+                <section class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary px-4 py-2">
+                        <i class="fas fa-save me-2"></i> Agendar Aula
+                    </button>
+                </section>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Script para melhorias nos campos -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona classes aos campos do formulário
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+        
+        // Verifica se o campo é inválido
+        if (input.classList.contains('is-invalid')) {
+            input.classList.add('border-danger');
+        }
+    });
+
+    // Configuração específica para campos de data/hora
+    const dateInput = document.getElementById('id_data');
+    if (dateInput) {
+        dateInput.type = 'datetime-local';
+    }
+});
+</script>
+{% endblock %}

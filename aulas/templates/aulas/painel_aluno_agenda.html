@@ -1,0 +1,150 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <!-- Cabeçalho -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Minha Agenda</h1>
+      <p class="text-gray-600 mt-1">Suas aulas presenciais agendadas</p>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button id="calendarViewBtn" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </button>
+      <button id="listViewBtn" class="px-3 py-1 border border-primary-500 rounded-md text-sm font-medium text-primary-600 bg-primary-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de Aulas -->
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    {% if aulas %}
+      <ul class="divide-y divide-gray-200">
+        {% for aula in aulas %}
+        <li class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="mb-2 md:mb-0">
+              <div class="flex items-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mr-2">
+                  {{ aula.get_tipo_display }}
+                </span>
+                <h3 class="text-lg font-medium text-gray-800">Aula com {{ aula.professor.get_full_name|default:aula.professor.username }}</h3>
+              </div>
+              <div class="mt-1 flex items-center text-sm text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {{ aula.data|date:"d/m/Y" }} às {{ aula.hora|time:"H:i" }}
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <a href="#" class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="-ml-0.5 mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Detalhes
+              </a>
+              <form method="post" action="{% url 'agenda:cancelar_aula' aula.id %}">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="-ml-0.5 mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Cancelar
+                </button>
+              </form>
+            </div>
+          </div>
+          {% if aula.observacoes %}
+          <div class="mt-2 pl-2 border-l-4 border-primary-200">
+            <p class="text-sm text-gray-600">{{ aula.observacoes }}</p>
+          </div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="text-center py-12">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="mt-2 text-lg font-medium text-gray-900">Nenhuma aula agendada</h3>
+        <p class="mt-1 text-sm text-gray-500">Seu professor ainda não agendou aulas presenciais para você.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Filtros -->
+  <div class="mt-6 bg-white p-4 rounded-lg shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="relative rounded-md shadow-sm w-full sm:w-64 mb-2 sm:mb-0">
+        <input type="text" id="search" class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500" placeholder="Filtrar por tipo...">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="flex space-x-2">
+        <select id="filterDate" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+          <option>Todas as datas</option>
+          <option>Próximas 2 semanas</option>
+          <option>Este mês</option>
+          <option>Passadas</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script para filtragem e alternância de visualização -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Alternar entre visualização de lista e calendário
+    const calendarViewBtn = document.getElementById('calendarViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    
+    if (calendarViewBtn && listViewBtn) {
+      calendarViewBtn.addEventListener('click', function() {
+        this.classList.add('border-primary-500', 'text-primary-600', 'bg-primary-50');
+        this.classList.remove('border-gray-300', 'text-gray-700', 'bg-white');
+        listViewBtn.classList.add('border-gray-300', 'text-gray-700', 'bg-white');
+        listViewBtn.classList.remove('border-primary-500', 'text-primary-600', 'bg-primary-50');
+        // Aqui você implementaria a lógica para mostrar o calendário
+        alert('Visualização de calendário será implementada na próxima versão!');
+      });
+      
+      listViewBtn.addEventListener('click', function() {
+        this.classList.add('border-primary-500', 'text-primary-600', 'bg-primary-50');
+        this.classList.remove('border-gray-300', 'text-gray-700', 'bg-white');
+        calendarViewBtn.classList.add('border-gray-300', 'text-gray-700', 'bg-white');
+        calendarViewBtn.classList.remove('border-primary-500', 'text-primary-600', 'bg-primary-50');
+      });
+    }
+    
+    // Filtragem por texto
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const items = document.querySelectorAll('ul.divide-y li');
+        
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

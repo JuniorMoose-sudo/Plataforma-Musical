@@ -1,0 +1,120 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+  <!-- Cabeçalho -->
+  <header class="text-center mb-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+    <h1 class="text-2xl font-bold text-gray-800 mt-4">Agendar Nova Aula Presencial</h1>
+    <p class="text-gray-500 mt-1">Preencha os detalhes da aula para seu aluno</p>
+  </header>
+
+  <!-- Formulário -->
+  <form method="post" class="space-y-6" novalidate>
+    {% csrf_token %}
+    
+    <!-- Seção Aluno -->
+    <section>
+      <label for="id_aluno" class="block text-sm font-medium text-gray-700 mb-1">Aluno</label>
+      <div class="mt-1">
+        {{ form.aluno }}
+      </div>
+      {% if form.aluno.errors %}
+        <p class="mt-2 text-sm text-red-600">{{ form.aluno.errors|join:", " }}</p>
+      {% endif %}
+    </section>
+    
+    <!-- Seção Data e Hora -->
+    <section>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="id_data" class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            {{ form.data }}
+          </div>
+          {% if form.data.errors %}
+            <p class="mt-2 text-sm text-red-600">{{ form.data.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+        
+        <div>
+          <label for="id_hora" class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            {{ form.hora }}
+          </div>
+          {% if form.hora.errors %}
+            <p class="mt-2 text-sm text-red-600">{{ form.hora.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+    
+    <!-- Seção Tipo de Aula -->
+    <section>
+      <label for="id_tipo" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Aula</label>
+      <div class="mt-1">
+        {{ form.tipo }}
+      </div>
+      {% if form.tipo.errors %}
+        <p class="mt-2 text-sm text-red-600">{{ form.tipo.errors|join:", " }}</p>
+      {% endif %}
+    </section>
+    
+    <!-- Seção Observações -->
+    <section>
+      <label for="id_observacoes" class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+      <div class="mt-1">
+        {{ form.observacoes }}
+      </div>
+      {% if form.observacoes.errors %}
+        <p class="mt-2 text-sm text-red-600">{{ form.observacoes.errors|join:", " }}</p>
+      {% endif %}
+    </section>
+
+    <!-- Seção Botões -->
+    <section class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+      <a href="{% url 'agenda:minhas_aulas' %}" 
+         class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+        Cancelar
+      </a>
+      <button type="submit" 
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+        Agendar Aula
+      </button>
+    </section>
+  </form>
+</div>
+
+<!-- Script para melhorar a experiência de data/hora -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Configuração do campo de data
+    const dateInput = document.getElementById('id_data');
+    if (dateInput) {
+      dateInput.type = 'date';
+      dateInput.classList.add('w-full');
+    }
+    
+    // Configuração do campo de hora
+    const timeInput = document.getElementById('id_hora');
+    if (timeInput) {
+      timeInput.type = 'time';
+      timeInput.classList.add('w-full');
+    }
+
+    // Adiciona classes aos selects
+    const selectElements = document.querySelectorAll('select');
+    selectElements.forEach(select => {
+      select.classList.add('w-full', 'rounded-md', 'border-gray-300', 'shadow-sm');
+    });
+
+    // Adiciona classes ao textarea
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.classList.add('w-full', 'rounded-md', 'border-gray-300', 'shadow-sm');
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md text-center">
+  <!-- Ícone e cabeçalho -->
+  <div class="mb-6">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+    <h1 class="text-2xl font-bold text-gray-800 mt-4">Você saiu da sua conta</h1>
+    <p class="text-gray-500 mt-2">Volte sempre à MusiArt!</p>
+  </div>
+
+  <!-- Opções de ação -->
+  <div class="space-y-4">
+    <form method="post" action="{% url 'account_logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+        Fazer login novamente
+      </button>
+    </form>
+    
+    <a href="/" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+      Voltar à página inicial
+    </a>
+  </div>
+
+  <!-- Mensagem adicional -->
+  <p class="mt-6 text-sm text-gray-500">
+    Foi um prazer tê-lo conosco. Suas configurações e preferências foram salvas para quando você voltar.
+  </p>
+</div>
+{% endblock %}
