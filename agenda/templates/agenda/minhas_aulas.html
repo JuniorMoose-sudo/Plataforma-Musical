@@ -1,155 +1,194 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Minhas Aulas Agendadas | Plataforma Musical{% endblock %}
+{% block title %}Minhas Aulas Agendadas | MusiArt{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-4 font-weight-bold text-primary">
+<div class="container mx-auto px-4 py-8">
+    <!-- Título -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-primary-600">
             <i class="fas fa-calendar-alt mr-2"></i>Minhas Aulas
         </h1>
-        <a href="{% url 'agenda:agendar_aula' %}" class="btn btn-success btn-lg">
-            <i class="fas fa-plus-circle mr-2"></i>Agendar Nova Aula
-        </a>
     </div>
 
-    <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
-            <h2 class="h5 mb-0">
+    <!-- Calendário -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="bg-primary-600 px-6 py-4">
+            <h2 class="text-lg font-medium text-white">
+                <i class="fas fa-calendar mr-2"></i>Visualização em Calendário
+            </h2>
+        </div>
+        <div class="p-4">
+            <div id="calendar"></div>
+            <div id="calendar-loading" class="text-center py-4">
+                <div class="spinner-border text-primary-600" role="status">
+                    <span class="sr-only">Carregando calendário...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Aulas -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-primary-600 px-6 py-4">
+            <h2 class="text-lg font-medium text-white">
                 <i class="fas fa-list mr-2"></i>Próximas Aulas
             </h2>
         </div>
         
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th scope="col" class="w-25">Data/Horário</th>
-                            <th scope="col">Professor</th>
-                            <th scope="col">Tipo</th>
-                            <th scope="col">Status</th>
-                            <th scope="col" class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for aula in aulas %}
-                        <tr class="{% if aula.data < now %}table-secondary{% endif %}">
-                            <td>
-                                <div class="d-flex flex-column">
-                                    <span class="font-weight-bold">{{ aula.data|date:"d/m/Y" }}</span>
-                                    <small class="text-muted">{{ aula.data|date:"H:i" }}</small>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm bg-info text-white rounded-circle d-flex align-items-center justify-content-center mr-2">
-                                        {{ aula.professor.first_name|first }}{{ aula.professor.last_name|first }}
-                                    </div>
-                                    {{ aula.professor.get_full_name }}
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge badge-pill 
-                                    {% if aula.tipo == 'Instrumento' %}badge-info
-                                    {% elif aula.tipo == 'Teoria' %}badge-warning
-                                    {% else %}badge-secondary
-                                    {% endif %}">
-                                    {{ aula.get_tipo_display }}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data/Horário</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professor</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for aula in aulas %}
+                    <tr class="{% if aula.data < now %}bg-gray-50{% else %}hover:bg-gray-50{% endif %}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col">
+                                <span class="font-medium text-gray-900">{{ aula.data|date:"d/m/Y" }}</span>
+                                <span class="text-sm text-gray-500">{{ aula.data|date:"H:i" }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ aula.professor.get_full_name|default:aula.professor.username }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if aula.tipo == 'CANTO' %}bg-blue-100 text-blue-800
+                                {% elif aula.tipo == 'TECLADO' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {{ aula.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if aula.data.date == now.date %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-calendar-day mr-1"></i> Hoje
                                 </span>
-                            </td>
-                            <td>
-                                {% if aula.data < now %}
-                                    <span class="badge badge-secondary">Realizada</span>
-                                {% else %}
-                                    <span class="badge badge-success">Agendada</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <a href="#" class="btn btn-sm btn-outline-primary" data-toggle="tooltip" title="Detalhes">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    {% if aula.data > now %}
-                                    <a href="#" class="btn btn-sm btn-outline-warning" data-toggle="tooltip" title="Reagendar">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger" data-toggle="tooltip" title="Cancelar">
-                                        <i class="fas fa-times"></i>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4">
-                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                                <h4 class="text-muted">Nenhuma aula agendada</h4>
-                                <p class="text-muted">Clique no botão acima para agendar sua primeira aula</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        {% if aulas.has_other_pages %}
-        <div class="card-footer bg-white">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center mb-0">
-                    {% if aulas.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ aulas.previous_page_number }}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                    
-                    {% for num in aulas.paginator.page_range %}
-                    <li class="page-item {% if aulas.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                    </li>
+                            {% elif aula.data > now %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-clock mr-1"></i> Agendada
+                                </span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    <i class="fas fa-check-circle mr-1"></i> Realizada
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center">
+                            <i class="fas fa-calendar-times text-4xl text-gray-400 mb-3"></i>
+                            <h4 class="text-lg text-gray-500">Nenhuma aula agendada</h4>
+                        </td>
+                    </tr>
                     {% endfor %}
-                    
-                    {% if aulas.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ aulas.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
+                </tbody>
+            </table>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<!-- FullCalendar CSS & JS com carregamento assíncrono -->
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"></noscript>
+
 <script>
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-    
-    // Atualiza o status das aulas em tempo real
-    function updateAulaStatus() {
-        $('.table tr').each(function() {
-            const dateText = $(this).find('td:first-child .font-weight-bold').text() + 
-                            ' ' + $(this).find('td:first-child small').text();
-            const aulaDate = new Date(dateText.split('/').reverse().join('-').replace(' ', 'T'));
-            const now = new Date();
-            
-            if (aulaDate < now && !$(this).hasClass('table-secondary')) {
-                $(this).addClass('table-secondary');
-                $(this).find('.badge-success').removeClass('badge-success').addClass('badge-secondary').text('Realizada');
+// Função para carregar o FullCalendar de forma assíncrona
+function loadFullCalendar() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Mostra o loading
+        const loadingElement = document.getElementById('calendar-loading');
+        const calendarEl = document.getElementById('calendar');
+        
+        if (!calendarEl) return;
+        
+        // Carrega o FullCalendar
+        await loadFullCalendar();
+        
+        // Inicializa o calendário
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'pt-br',
+            height: 550,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: [
+                {% for aula in aulas %}
+                {
+                    title: '{{ aula.get_tipo_display|escapejs }} - {{ aula.professor.get_full_name|default:aula.professor.username|escapejs }}',
+                    start: '{{ aula.data|date:"Y-m-d\\TH:i:s" }}',
+                    color: '{% if aula.data < now %}#6B7280{% elif aula.data.date == now.date %}#3B82F6{% else %}#10B981{% endif %}',
+                    extendedProps: {
+                        aulaId: '{{ aula.pk }}'
+                    }
+                },
+                {% endfor %}
+            ],
+            loading: function(isLoading) {
+                if (loadingElement) {
+                    loadingElement.style.display = isLoading ? 'block' : 'none';
+                }
             }
         });
+        
+        calendar.render();
+        calendarEl.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Erro ao carregar calendário:', error);
+        if (loadingElement) {
+            loadingElement.innerHTML = '<div class="alert alert-danger">Erro ao carregar o calendário. Recarregue a página.</div>';
+        }
     }
-    
-    updateAulaStatus();
-    setInterval(updateAulaStatus, 60000); // Atualiza a cada minuto
 });
+
+// Atualiza o status das aulas em tempo real
+function updateAulaStatus() {
+    document.querySelectorAll('tbody tr').forEach(row => {
+        const dateText = row.querySelector('td:first-child .font-medium').textContent.trim() + 
+                        ' ' + row.querySelector('td:first-child .text-sm').textContent.trim();
+        const [day, month, year] = dateText.split(' ')[0].split('/');
+        const [hours, minutes] = dateText.split(' ')[1].split(':');
+        const aulaDate = new Date(year, month-1, day, hours, minutes);
+        const now = new Date();
+        
+        if (aulaDate < now && !row.classList.contains('bg-gray-50')) {
+            row.classList.add('bg-gray-50');
+            const statusBadge = row.querySelector('td:nth-child(4) span');
+            if (statusBadge) {
+                statusBadge.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800';
+                statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Realizada';
+            }
+        }
+    });
+}
+
+// Executa ao carregar e a cada minuto
+updateAulaStatus();
+setInterval(updateAulaStatus, 60000);
 </script>
 {% endblock %}

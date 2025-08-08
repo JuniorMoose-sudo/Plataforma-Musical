@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import AulaAgendadaForm
 from agenda.models import AulaAgendada
 from .forms import AulaForm
+from missoes.models import Missao, MissaoAluno
 
 
 ''' Este arquivo contém as views para o aplicativo de aulas, permitindo que os usuários visualizem, assistam e agendem aulas.
@@ -15,39 +16,112 @@ from .forms import AulaForm
     - lista_aulas_professor: Exibe as aulas agendadas para o professor.
     - lista_aulas_aluno: Exibe as aulas agendadas para o aluno.
     - detalhes_aula_agendada: Exibe os detalhes de uma aula agendada específica.'''
+
 @login_required
 def lista_aulas(request):
-    mundo = request.GET.get('mundo')
+    mundo_id = request.GET.get('mundo')
     categoria = request.GET.get('categoria')
-    
-    aulas = Aula.objects.all()
-    if mundo:
-        aulas = aulas.filter(mundo=mundo)
-    if categoria:
-        aulas = aulas.filter(categoria=categoria)
 
-    assistidas_ids = ProgressoAlunoAula.objects.filter(aluno=request.user).values_list('aula_id', flat=True)
-    
+    assistidas_ids = ProgressoAlunoAula.objects.filter(
+        aluno=request.user
+    ).values_list('aula_id', flat=True)
+
+    if mundo_id:
+        mundo_id = int(mundo_id)
+        mundo_str = str(mundo_id)
+
+        # Mundo 1 sempre está liberado sem verificação
+        if mundo_id == 1:
+            aulas = Aula.objects.filter(mundo=mundo_str)
+            mundo_liberado = True
+            bloqueado = False
+            missoes = []
+        else:
+            # Para mundos > 1, verificar missões
+            missoes = Missao.objects.filter(mundo=mundo_str)
+            concluidas_ids = MissaoAluno.objects.filter(
+                aluno=request.user,
+                missao__in=missoes,
+                concluida=True
+            ).values_list('missao_id', flat=True)
+
+            for m in missoes:
+                m.concluida = m.id in concluidas_ids
+
+            mundo_liberado = all(m.concluida for m in missoes)
+            bloqueado = not mundo_liberado
+
+            if bloqueado:
+                aulas = []
+            else:
+                aulas = Aula.objects.filter(mundo=mundo_str)
+                
+        if categoria and aulas.exists():
+            aulas = aulas.filter(categoria=categoria)
+    else:
+        aulas = Aula.objects.none()
+        bloqueado = False
+        missoes = []
+        mundo_liberado = False
+
     return render(request, 'aulas/lista.html', {
         'aulas': aulas,
-        'assistidas_ids': assistidas_ids
+        'assistidas_ids': assistidas_ids,
+        'bloqueado': bloqueado,
+        'missoes': missoes,
+        'mundo_id': mundo_id if mundo_id else None,
+        'mundo_liberado': mundo_liberado
     })
 
 @login_required
 def assistir_aula(request, aula_id):
     aula = get_object_or_404(Aula, id=aula_id)
+    
+    # Mundo 1 sempre liberado
+    if aula.mundo == '1':
+        mundo_liberado = True
+    else:
+        # Verificar missões para outros mundos
+        missoes = Missao.objects.filter(mundo=aula.mundo)
+        concluidas = MissaoAluno.objects.filter(
+            aluno=request.user,
+            missao__in=missoes,
+            concluida=True
+        ).count()
+        mundo_liberado = concluidas == missoes.count()
 
     assistida = ProgressoAlunoAula.objects.filter(aluno=request.user, aula=aula).exists()
 
     return render(request, 'aulas/detalhe.html', {
         'aula': aula,
-        'assistida': assistida
+        'assistida': assistida,
+        'mundo_liberado': mundo_liberado
     })
 
 @login_required
 def marcar_como_assistida(request, aula_id):
     aula = get_object_or_404(Aula, id=aula_id)
-    progresso, created = ProgressoAlunoAula.objects.get_or_create(aluno=request.user, aula=aula)
+
+    # Marca aula como assistida
+    progresso, created = ProgressoAlunoAula.objects.get_or_create(
+        aluno=request.user,
+        aula=aula
+    )
+
+    # Verifica se existe uma missão vinculada a essa aula
+    missao = Missao.objects.filter(aula=aula).first()
+
+    if missao:
+        # Verifica se o aluno já concluiu essa missão
+        missao_aluno, created = MissaoAluno.objects.get_or_create(
+            aluno=request.user,
+            missao=missao
+        )
+
+        if not missao_aluno.concluida:
+            missao_aluno.concluida = True
+            missao_aluno.save()
+
     return redirect('aulas:assistir_aula', aula_id=aula.id)
 
 @login_required
@@ -66,6 +140,11 @@ def agendar_aula(request):
         form = AulaAgendadaForm()
 
     return render(request, 'aulas/agendar_aula.html', {'form': form})
+
+@login_required
+def detalhe_aula(request, aula_id):
+    aula = get_object_or_404(Aula, id=aula_id)
+    return render(request, 'aulas/detalhe_aula.html', {'aula': aula})
 
 @login_required
 def painel_professor(request):
@@ -90,6 +169,3 @@ def nova_aula(request):
         form = AulaForm()
 
     return render(request, 'aulas/nova_aula.html', {'form': form})
-
-
-

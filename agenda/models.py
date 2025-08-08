@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from aulas.models import Aula  # Importe se necessário para relacionamentos futuros
+from aulas.models import Aula
 
 User = get_user_model()
 

@@ -5,6 +5,9 @@ from django.views import View
 from django.views.generic import CreateView, ListView, UpdateView
 from .models import AulaAgendada
 from .forms import AgendarAulaForm
+from django.utils import timezone
+from django.core.paginator import Paginator
+from django.shortcuts import render
 
 class AgendarAulaView(LoginRequiredMixin, CreateView):
     model = AulaAgendada
@@ -38,3 +41,19 @@ class CancelarAulaView(LoginRequiredMixin, View):
         aula = get_object_or_404(AulaAgendada, pk=pk, professor=request.user)
         aula.delete()
         return redirect(reverse_lazy('agenda:aulas_professor'))
+
+class MinhasAulasAlunoView(LoginRequiredMixin, ListView):
+    model = AulaAgendada
+    template_name = 'agenda/minhas_aulas.html'
+    context_object_name = 'aulas'
+    paginate_by = 15
+
+    def get_queryset(self):
+        return AulaAgendada.objects.filter(
+            aluno=self.request.user
+        ).order_by('data')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['now'] = timezone.now()
+        return context

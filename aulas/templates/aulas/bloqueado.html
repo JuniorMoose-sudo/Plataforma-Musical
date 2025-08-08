@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="cards-bloqueado-container">
+  <h2>🚫 Conteúdo Bloqueado</h2>
+  <p>{{ mensagem }}</p>
+
+  <div class="card-options">
+    <div class="card-option">
+      <h3>📋 Missões Pendentes</h3>
+      <p>Confira o que você precisa concluir no Mundo {{ mundo_id_anterior }}.</p>
+      <a href="{% url 'missoes:lista' mundo_id=mundo_id_anterior %}" class="btn btn-warning">Ver Missões</a>
+    </div>
+
+    <div class="card-option">
+      <h3>🔙 Retornar</h3>
+      <p>Voltar ao último mundo liberado ou explorar outros recursos disponíveis.</p>
+      <a href="{% url 'aulas:lista_aulas' %}?mundo={{ mundo_id_anterior }}" class="btn btn-secondary">Voltar</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cards-bloqueado-container {
+    max-width: 800px;
+    margin: 50px auto;
+    text-align: center;
+  }
+  .cards-bloqueado-container h2 {
+    color: #cc0000;
+    margin-bottom: 15px;
+  }
+  .cards-bloqueado-container p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+  }
+
+  .card-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .card-option {
+    background-color: #f8f8f8;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    width: 320px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+  }
+  .card-option:hover {
+    transform: scale(1.05);
+  }
+  .card-option h3 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+  .card-option p {
+    font-size: 1em;
+    margin-bottom: 15px;
+  }
+  .card-option .btn {
+    padding: 8px 16px;
+  }
+</style>
+{% endblock %}

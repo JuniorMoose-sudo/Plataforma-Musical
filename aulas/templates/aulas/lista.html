@@ -50,13 +50,42 @@
           Filtrar
         </button>
         {% if request.GET.mundo or request.GET.categoria %}
-        <a href="{% url 'lista_aulas' %}" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <a href="{% url 'aulas:lista_aulas' %}" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
           Limpar
         </a>
         {% endif %}
       </div>
     </form>
   </div>
+
+  <!-- Seção de Missões (apenas quando um mundo específico está selecionado) -->
+  {% if missoes %}
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Missões do Mundo {{ mundo_id }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for missao in missoes %}
+      <div class="missao-card bg-gray-50 rounded-lg p-4 border {% if missao.concluida %}border-green-200 bg-green-50{% else %}border-gray-200{% endif %}">
+        <div class="flex items-start justify-between">
+          <h3 class="font-medium text-gray-800">{{ missao.titulo }}</h3>
+          {% if missao.concluida %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Concluída
+          </span>
+          {% endif %}
+        </div>
+        <p class="mt-2 text-sm text-gray-600">{{ missao.descricao }}</p>
+        {% if not missao.concluida %}
+        <div class="mt-4">
+          <a href="{% url 'missoes:concluir_missao' missao.id %}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            Realizar Missão
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Lista de Aulas -->
   {% if aulas %}
@@ -65,14 +94,26 @@
     <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 border border-gray-100">
       <div class="aspect-w-16 aspect-h-9 bg-gray-200 relative">
         <img src="https://img.youtube.com/vi/{{ aula.youtube_id }}/mqdefault.jpg" alt="Thumbnail da aula {{ aula.titulo }}" class="object-cover w-full h-full">
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="bg-black bg-opacity-50 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-            </svg>
+        {% if aula.mundo == '1' or mundo_liberado %}
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="bg-black bg-opacity-50 rounded-full p-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              </svg>
+            </div>
           </div>
-        </div>
-        <a href="{% url 'aulas:assistir_aula' aula.id %}" class="absolute inset-0" aria-label="Assistir aula {{ aula.titulo }}"></a>
+          <a href="{% url 'aulas:assistir_aula' aula.id %}" class="absolute inset-0" aria-label="Assistir aula {{ aula.titulo }}"></a>
+        {% else %}
+          <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4">
+            <div class="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-yellow-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p class="text-white font-medium">Mundo bloqueado</p>
+              <p class="text-yellow-200 text-sm mt-1">Conclua as missões anteriores para desbloquear</p>
+            </div>
+          </div>
+        {% endif %}
       </div>
       
       <div class="p-5">
@@ -88,7 +129,7 @@
               </span>
             </div>
           </div>
-          {% if aula.id in assistidas_ids %}
+          {% if aula.id in assistidas_ids and aula.mundo == '1' or aula.id in assistidas_ids and mundo_liberado %}
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
             ✅ Assistida
           </span>
@@ -104,12 +145,21 @@
             </svg>
             {{ aula.duracao }} min
           </div>
-          <a href="{% url 'aulas:assistir_aula' aula.id %}" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
-            Assistir aula
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
+          {% if aula.mundo == '1' or mundo_liberado %}
+            <a href="{% url 'aulas:assistir_aula' aula.id %}" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
+              Assistir aula
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          {% else %}
+            <span class="inline-flex items-center text-sm font-medium text-gray-400 cursor-not-allowed">
+              Bloqueado
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </span>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -123,7 +173,7 @@
     <h3 class="mt-2 text-lg font-medium text-gray-900">Nenhuma aula encontrada</h3>
     <p class="mt-1 text-sm text-gray-500">Tente ajustar os filtros ou volte mais tarde.</p>
     {% if request.GET.mundo or request.GET.categoria %}
-    <a href="{% url 'aulas:aulas' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+    <a href="{% url 'aulas:lista_aulas' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
       Limpar filtros
     </a>
     {% endif %}

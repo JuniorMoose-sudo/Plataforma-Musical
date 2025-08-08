@@ -1,55 +1,89 @@
 {% extends 'core/base.html' %}
 
+{% block title %}Agenda | MusiArt{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">
-            <i class="fas fa-calendar-alt"></i> Minhas Aulas Agendadas
-        </h1>
-        <a href="{% url 'agenda:agendar' %}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Nova Aula
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-primary-600">Agenda de Aulas</h1>
+        <a href="{% url 'agenda:agendar' %}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors">
+            Agendar Nova Aula
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Aluno</th>
-                    <th>Data/Hora</th>
-                    <th>Tipo</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for aula in aulas %}
-                <tr>
-                    <td>{{ aula.aluno.get_full_name }}</td>
-                    <td>{{ aula.data|date:"d/m/Y H:i" }}</td>
-                    <td>{{ aula.get_tipo_display }}</td>
-                    <td>
-                        {% if aula.confirmada %}
-                            <span class="badge bg-success">Confirmada</span>
-                        {% else %}
-                            <span class="badge bg-warning">Pendente</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="#" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        Nenhuma aula agendada.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="bg-white shadow rounded-lg overflow-hidden mb-8">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data/Horário</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aluno</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for aula in aulas %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ aula.data|date:"d/m/Y H:i" }}</div>
+                            {% if aula.data.date == now.date %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Hoje</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ aula.aluno.get_full_name|default:aula.aluno.username }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if aula.tipo == 'CANTO' %}bg-blue-100 text-blue-800
+                                {% elif aula.tipo == 'TECLADO' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {{ aula.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if aula.data.date == now.date %}
+                                <span class="text-sm text-blue-600">Hoje</span>
+                            {% elif aula.data > now %}
+                                <span class="text-sm text-green-600">Agendada</span>
+                            {% else %}
+                                <span class="text-sm text-gray-500">Realizada ✔️</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{% url 'agenda:editar' aula.pk %}" class="text-green-600 hover:text-green-900">✔️</a>
+                                <form method="post" action="{% url 'agenda:cancelar' aula.pk %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Cancelar aula?')">✕️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                            Nenhuma aula agendada
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <footer class="mt-12 pt-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <p class="text-sm text-gray-500 mb-4 md:mb-0">© 2025 MusiArt. Todos os direitos reservados.</p>
+            <div class="flex space-x-4">
+                <a href="#" class="text-sm text-gray-500 hover:text-primary-600">Termos de Serviço</a>
+                <a href="#" class="text-sm text-gray-500 hover:text-primary-600">Política de Privacidade</a>
+                <a href="#" class="text-sm text-gray-500 hover:text-primary-600">Contato</a>
+            </div>
+        </div>
+    </footer>
 </div>
 {% endblock %}

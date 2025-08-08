@@ -13,5 +13,6 @@ urlpatterns = [
     path('', include('core.urls')),
     path('accounts/', include('allauth.urls')),
     path('agenda/', include('agenda.urls', namespace='agenda')),
+    path('missoes/', include('missoes.urls')),
 
 ]

@@ -1,10 +1,10 @@
-# agenda/urls.py
 from django.urls import path
 from .views import (
     AgendarAulaView,
     AulasProfessorView,
     EditarAulaView,
     CancelarAulaView,
+    MinhasAulasAlunoView
 )
 
 app_name = 'agenda'
@@ -14,6 +14,5 @@ urlpatterns = [
     path('aulas-professor/', AulasProfessorView.as_view(), name='aulas_professor'),
     path('editar/<int:pk>/', EditarAulaView.as_view(), name='editar'),
     path('cancelar/<int:pk>/', CancelarAulaView.as_view(), name='cancelar'),
-    path('minhas-aulas/', AulasProfessorView.as_view(), name='minhas_aulas'),
-    
+    path('minhas-aulas/', MinhasAulasAlunoView.as_view(), name='minhas_aulas'),  # corrigido
 ]

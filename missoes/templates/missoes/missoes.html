@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h2>🎯 Missões do {{ mundo_nome }}</h2>
+<div class="missoes-container">
+  {% for missao in missoes %}
+    <div class="missao-card {% if missao.concluida %}concluida{% endif %}">
+      <h3>{{ missao.titulo }}</h3>
+      <p>{{ missao.descricao }}</p>
+
+      {% if missao.concluida %}
+        <span class="badge badge-success">✅ Concluída</span>
+      {% else %}
+        <a href="{% url 'aulas:detalhe_aula' missao.aula.id %}" class="btn btn-primary">Iniciar Missão</a>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+<style>
+  .missoes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .missao-card {
+    background: #f4f4f4;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .missao-card.concluida {
+    background: #d4edda;
+    border: 2px solid #28a745;
+  }
+</style>
+{% endblock %}
