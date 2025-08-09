@@ -14,23 +14,32 @@ Voltada para canto, teclado e órgão, ela oferece painéis distintos para aluno
 
 👨‍🎓 Alunos
 
-#✅ Cadastro/Login com autenticação segura (Django Auth / django-allauth)
+✅ Cadastro/Login com autenticação segura (Django Auth / django-allauth)
 
-#✅ Perfil com dados pessoais e histórico
-#✅ Escolha de mundos (níveis): Iniciante, Intermediário, Avançado (futuro)
-#✅ Acesso a aulas gravadas por categoria e nível
-#✅ Marcar aulas como assistidas e registrar progresso
-#✅ Visualizar agenda de aulas presenciais agendadas pelo professor
-#✅ Painel com resumo do progresso
+✅ Perfil com dados pessoais e histórico
+
+✅ Escolha de mundos (níveis): Iniciante, Intermediário, Avançado (futuro)
+
+✅ Acesso a aulas gravadas por categoria e nível
+
+✅ Marcar aulas como assistidas e registrar progresso
+
+✅ Visualizar agenda de aulas presenciais agendadas pelo professor
+
+✅ Painel com resumo do progresso
+
 
 👨‍🏫 Professores
 
-#✅ Painel exclusivo com permissões diferenciadas
-#✅ Cadastro e organização de aulas gravadas (YouTube)
-#✅ Agendamento de aulas presenciais para alunos
-#✅ Edição ou cancelamento de agendamentos
-#✅ Lista de alunos e (futuramente) acompanhamento de progresso
+✅ Painel exclusivo com permissões diferenciadas
 
+✅ Cadastro e organização de aulas gravadas (YouTube)
+
+✅ Agendamento de aulas presenciais para alunos
+
+✅ Edição ou cancelamento de agendamentos
+
+✅ Lista de alunos e (futuramente) acompanhamento de progresso
 
 🛠 Stack Tecnológica
 Camada	Tecnologia
