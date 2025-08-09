@@ -57,7 +57,9 @@ cd plataforma-musical
 
 # 2️⃣ Criar ambiente virtual
 python -m venv venv
+
 source venv/bin/activate   # Linux/Mac
+
 venv\Scripts\activate      # Windows
 
 # 3️⃣ Instalar dependências
@@ -68,6 +70,7 @@ cp .env.example .env
 
 # 5️⃣ Rodar migrações e criar superusuário
 python manage.py migrate
+
 python manage.py createsuperuser
 
 # 6️⃣ Iniciar servidor
