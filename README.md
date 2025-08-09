@@ -15,6 +15,7 @@ Voltada para canto, teclado e órgão, ela oferece painéis distintos para aluno
 👨‍🎓 Alunos
 
 #✅ Cadastro/Login com autenticação segura (Django Auth / django-allauth)
+
 #✅ Perfil com dados pessoais e histórico
 #✅ Escolha de mundos (níveis): Iniciante, Intermediário, Avançado (futuro)
 #✅ Acesso a aulas gravadas por categoria e nível
