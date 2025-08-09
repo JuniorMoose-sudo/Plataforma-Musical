@@ -52,7 +52,7 @@ Camada	Tecnologia
 
 ⚙️ Instalação
 # 1️⃣ Clonar repositório
-git clone https://github.com/seuusuario/plataforma-musical.git
+git clone [https://github.com/seuusuario/plataforma-musical.git](https://github.com/JuniorMoose-sudo/Plataforma-Musical)
 cd plataforma-musical
 
 # 2️⃣ Criar ambiente virtual
