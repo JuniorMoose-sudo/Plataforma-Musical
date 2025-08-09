@@ -30,14 +30,33 @@ def lista_aulas(request):
         mundo_id = int(mundo_id)
         mundo_str = str(mundo_id)
 
+        # Verifica se todas as aulas do mundo 1 foram assistidas
+        aulas_mundo_1 = Aula.objects.filter(mundo='1')
+        aulas_assistidas_mundo_1 = aulas_mundo_1.filter(
+            id__in=ProgressoAlunoAula.objects.filter(aluno=request.user).values_list('aula_id', flat=True)
+        )
+        mundo_1_completo = aulas_mundo_1.exists() and aulas_mundo_1.count() == aulas_assistidas_mundo_1.count()
+
         # Mundo 1 sempre está liberado sem verificação
         if mundo_id == 1:
             aulas = Aula.objects.filter(mundo=mundo_str)
             mundo_liberado = True
             bloqueado = False
             missoes = []
+
         else:
-            # Para mundos > 1, verificar missões
+            # Bloqueio adicional: mundo 2 ou 3 só liberado se mundo 1 estiver completo
+            if mundo_id in [2, 3] and not mundo_1_completo:
+                bloqueado = True
+                aulas = []
+                mensagem = "Você precisa concluir todas as aulas do Mundo 1 antes de acessar este conteúdo."
+                mundo_id_anterior = 1
+                return render(request, 'aulas/bloqueado.html', {
+                    'mensagem': mensagem,
+                    'mundo_id_anterior': mundo_id_anterior
+                })
+
+            # Verificar missões para mundos > 1
             missoes = Missao.objects.filter(mundo=mundo_str)
             concluidas_ids = MissaoAluno.objects.filter(
                 aluno=request.user,
@@ -55,9 +74,10 @@ def lista_aulas(request):
                 aulas = []
             else:
                 aulas = Aula.objects.filter(mundo=mundo_str)
-                
+
         if categoria and aulas.exists():
             aulas = aulas.filter(categoria=categoria)
+
     else:
         aulas = Aula.objects.none()
         bloqueado = False
@@ -76,10 +96,27 @@ def lista_aulas(request):
 @login_required
 def assistir_aula(request, aula_id):
     aula = get_object_or_404(Aula, id=aula_id)
-    
+
+    # Verifica se todas as aulas do mundo 1 foram assistidas
+    aulas_mundo_1 = Aula.objects.filter(mundo='1')
+    aulas_assistidas_mundo_1 = aulas_mundo_1.filter(
+        id__in=ProgressoAlunoAula.objects.filter(aluno=request.user).values_list('aula_id', flat=True)
+    )
+    mundo_1_completo = aulas_mundo_1.exists() and aulas_mundo_1.count() == aulas_assistidas_mundo_1.count()
+
     # Mundo 1 sempre liberado
     if aula.mundo == '1':
         mundo_liberado = True
+
+    # Mundos 2 e 3 exigem conclusão do mundo 1
+    elif aula.mundo in ['2', '3'] and not mundo_1_completo:
+        mensagem = "Você precisa concluir todas as aulas do Mundo 1 antes de acessar esta aula."
+        mundo_id_anterior = 1
+        return render(request, 'aulas/bloqueado.html', {
+            'mensagem': mensagem,
+            'mundo_id_anterior': mundo_id_anterior
+        })
+
     else:
         # Verificar missões para outros mundos
         missoes = Missao.objects.filter(mundo=aula.mundo)
@@ -89,6 +126,14 @@ def assistir_aula(request, aula_id):
             concluida=True
         ).count()
         mundo_liberado = concluidas == missoes.count()
+
+        if not mundo_liberado:
+            mensagem = "Você precisa concluir todas as missões deste mundo antes de acessar esta aula."
+            mundo_id_anterior = int(aula.mundo)
+            return render(request, 'aulas/bloqueado.html', {
+                'mensagem': mensagem,
+                'mundo_id_anterior': mundo_id_anterior
+            })
 
     assistida = ProgressoAlunoAula.objects.filter(aluno=request.user, aula=aula).exists()
 

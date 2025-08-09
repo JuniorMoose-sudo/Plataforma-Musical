@@ -99,96 +99,52 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- FullCalendar CSS & JS com carregamento assíncrono -->
-<link rel="preload" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"></noscript>
+<!-- Moment.js via jsDelivr -->
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/locale/pt-br.js"></script>
+
+<!-- FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
-// Função para carregar o FullCalendar de forma assíncrona
-function loadFullCalendar() {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js';
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const loadingEl = document.getElementById('calendar-loading');
 
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // Mostra o loading
-        const loadingElement = document.getElementById('calendar-loading');
-        const calendarEl = document.getElementById('calendar');
-        
-        if (!calendarEl) return;
-        
-        // Carrega o FullCalendar
-        await loadFullCalendar();
-        
-        // Inicializa o calendário
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'pt-br',
-            height: 550,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            events: [
-                {% for aula in aulas %}
-                {
-                    title: '{{ aula.get_tipo_display|escapejs }} - {{ aula.professor.get_full_name|default:aula.professor.username|escapejs }}',
-                    start: '{{ aula.data|date:"Y-m-d\\TH:i:s" }}',
-                    color: '{% if aula.data < now %}#6B7280{% elif aula.data.date == now.date %}#3B82F6{% else %}#10B981{% endif %}',
-                    extendedProps: {
-                        aulaId: '{{ aula.pk }}'
-                    }
-                },
-                {% endfor %}
-            ],
-            loading: function(isLoading) {
-                if (loadingElement) {
-                    loadingElement.style.display = isLoading ? 'block' : 'none';
-                }
-            }
-        });
-        
-        calendar.render();
-        calendarEl.style.display = 'block';
-        
-    } catch (error) {
-        console.error('Erro ao carregar calendário:', error);
-        if (loadingElement) {
-            loadingElement.innerHTML = '<div class="alert alert-danger">Erro ao carregar o calendário. Recarregue a página.</div>';
-        }
+    if (!calendarEl) {
+        console.warn('Elemento #calendar não encontrado.');
+        return;
     }
-});
 
-// Atualiza o status das aulas em tempo real
-function updateAulaStatus() {
-    document.querySelectorAll('tbody tr').forEach(row => {
-        const dateText = row.querySelector('td:first-child .font-medium').textContent.trim() + 
-                        ' ' + row.querySelector('td:first-child .text-sm').textContent.trim();
-        const [day, month, year] = dateText.split(' ')[0].split('/');
-        const [hours, minutes] = dateText.split(' ')[1].split(':');
-        const aulaDate = new Date(year, month-1, day, hours, minutes);
-        const now = new Date();
-        
-        if (aulaDate < now && !row.classList.contains('bg-gray-50')) {
-            row.classList.add('bg-gray-50');
-            const statusBadge = row.querySelector('td:nth-child(4) span');
-            if (statusBadge) {
-                statusBadge.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800';
-                statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Realizada';
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        height: 550,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: [
+            {% for aula in aulas %}
+            {
+                title: '{{ aula.get_tipo_display|escapejs }} - {{ aula.professor.get_full_name|default:aula.professor.username|escapejs }}',
+                start: '{{ aula.data|date:"c" }}',
+                color: '{% if aula.data < now %}#6B7280{% elif aula.data|date:"Y-m-d" == now|date:"Y-m-d" %}#3B82F6{% else %}#10B981{% endif %}',
+                extendedProps: {
+                    aulaId: '{{ aula.pk }}'
+                }
+            },
+            {% endfor %}
+        ],
+        loading: function (isLoading) {
+            if (loadingEl) {
+                loadingEl.style.display = isLoading ? 'block' : 'none';
             }
         }
     });
-}
 
-// Executa ao carregar e a cada minuto
-updateAulaStatus();
-setInterval(updateAulaStatus, 60000);
+    calendar.render();
+});
 </script>
 {% endblock %}
